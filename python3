@@ -43,21 +43,11 @@ headers = {
 }
 
 def start_tor():
-    def start_tor():
-    # Termux aur Kali dono ke liye logic
-    is_termux = os.path.exists("/data/data/com.termux/files/usr/bin")
-    
-    if is_termux:
-        # Termux check
-        print(f"{Fore.YELLOW}[!] Termux Detected: Make sure 'tor' is running in another tab.")
-    else:
-        # Kali Linux check
-        if os.system("systemctl is-active --quiet tor") != 0:
-            print(f"{Fore.CYAN}[*] Starting Tor Service for Kali...")
-            os.system("sudo service tor start > /dev/null 2>&1")
-    
-    time.sleep(1)
+    if os.system("systemctl is-active --quiet tor") != 0:
+        os.system("sudo service tor start > /dev/null 2>&1")
     print(f"{Fore.GREEN}[OK] Ghost Tunnel: HTTP/HTTPS/ONION PROTOCOLS ACTIVE")
+
+def clean_and_verify(raw_html, target, report_file, source_label):
     try:
         soup = BeautifulSoup(raw_html, 'lxml')
         for junk in soup(["script", "style", "nav", "header", "footer", "aside"]):
@@ -205,4 +195,4 @@ def main():
     print(f"\n{Fore.GREEN}[➔] Investigation Complete. Comprehensive Report: {report_path}")
 
 if __name__ == "__main__":
-    main() 
+    main()

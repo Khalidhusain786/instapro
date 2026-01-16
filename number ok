@@ -1,0 +1,270 @@
+#!/usr/bin/env python3
+"""
+🔥 KHALID HUSAIN NUMEXPLOIT v4.0 - SILENT HEADLESS 🔥
+GitHub: https://github.com/Khalidhusain786/numexploit
+🤫 NO BROWSER | 📱 Screen Results | 💾 SINGLE FILE
+Usage: python3 num.py 7294088554
+"""
+
+import os
+import sys
+import time
+import json
+import random
+from datetime import datetime
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
+
+def banner():
+    print("""
+╔══════════════════════════════════════════════════════════════════════╗
+║  🔥 KHALID HUSAIN NUMEXPLOIT v4.0 - SILENT HEADLESS 🔥              ║
+║  GitHub: https://github.com/Khalidhusain786/numexploit               ║
+║  🤫 NO BROWSER | 📱 Screen + Single File | ✅ All Found/Not Found    ║
+╚══════════════════════════════════════════════════════════════════════╝
+    """)
+
+def human_delay(min_sec=0.5, max_sec=1.5):
+    time.sleep(random.uniform(min_sec, max_sec))
+
+def setup_silent_driver():
+    options = Options()
+    options.add_argument("--headless=new")           # SILENT HEADLESS
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--window-size=1920,1080")
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option('useAutomationExtension', False)
+    
+    driver = webdriver.Chrome(options=options)
+    driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+    return driver
+
+def safe_find_element(driver, selectors, by=By.XPATH, timeout=10):
+    wait = WebDriverWait(driver, timeout)
+    for selector in selectors:
+        try:
+            element = wait.until(EC.presence_of_element_located((by, selector)))
+            return element
+        except:
+            continue
+    return None
+
+def safe_click_element(driver, selectors, by=By.XPATH, timeout=10):
+    wait = WebDriverWait(driver, timeout)
+    for selector in selectors:
+        try:
+            element = wait.until(EC.element_to_be_clickable((by, selector)))
+            driver.execute_script("arguments[0].scrollIntoView(true);", element)
+            time.sleep(0.5)
+            driver.execute_script("arguments[0].click();", element)
+            return True
+        except:
+            continue
+    return False
+
+def main(target_number):
+    banner()
+    print(f"🎯 Target: {target_number}")
+    print("🤫 SILENT MODE STARTED...\n")
+    
+    # SINGLE FOLDER
+    folder = f"results/{target_number}"
+    os.makedirs(folder, exist_ok=True)
+    
+    # RESULTS DATA
+    results = {
+        "target_number": target_number,
+        "timestamp": datetime.now().isoformat(),
+        "status": "COMPLETE",
+        "steps": [],
+        "found_data": {},
+        "not_found": [],
+        "page_info": {}
+    }
+    
+    driver = None
+    try:
+        driver = setup_silent_driver()
+        
+        # === STEP 1: LOAD SITE ===
+        print("📡 [1/6] Loading site...")
+        driver.get("https://anishexploits.site/app/")
+        human_delay(2, 4)
+        results["steps"].append("✅ Site loaded")
+        print("✅ Site OK")
+        
+        # === STEP 2: ENTER ACCESS ===
+        print("🔐 [2/6] Finding ENTER ACCESS...")
+        access_selectors = [
+            "//*[contains(text(), 'Enter Access')]",
+            "//button[contains(text(), 'Access')]",
+            "//a[contains(text(), 'Access')]",
+            "//*[contains(@class, 'access')]"
+        ]
+        if safe_click_element(driver, access_selectors):
+            results["steps"].append("✅ Enter Access clicked")
+            print("✅ Access clicked")
+            human_delay(2, 3)
+        else:
+            results["not_found"].append("Enter Access button")
+            print("⚠️ Access button not found")
+        
+        # === STEP 3: PASSWORD ===
+        print("🔑 [3/6] Entering password...")
+        pwd_selectors = [
+            "//input[@type='password']",
+            "//input[contains(@name, 'pass')]",
+            "//input[contains(@placeholder, 'Password')]"
+        ]
+        pwd_field = safe_find_element(driver, pwd_selectors)
+        if pwd_field:
+            pwd_field.clear()
+            pwd_field.send_keys("Anish123")
+            results["found_data"]["password"] = "Anish123"
+            print("✅ Password entered")
+            human_delay(1, 2)
+            
+            # Auto submit
+            submit_selectors = [
+                "//button[@type='submit']",
+                "//button[contains(text(), 'Submit')]",
+                "//input[@type='submit']"
+            ]
+            safe_click_element(driver, submit_selectors)
+            results["steps"].append("✅ Password submitted")
+            human_delay(4, 6)
+        else:
+            results["not_found"].append("Password field")
+            print("⚠️ Password field not found")
+        
+        # === STEP 4: TARGET NUMBER ===
+        print("📱 [4/6] Entering target number...")
+        number_selectors = [
+            "//input[@type='tel']",
+            "//input[@type='number']",
+            "//input[contains(@placeholder, 'number')]",
+            "//input[contains(@name, 'number')]"
+        ]
+        number_field = safe_find_element(driver, number_selectors)
+        if number_field:
+            number_field.clear()
+            number_field.send_keys(target_number)
+            results["found_data"]["target_number"] = target_number
+            print("✅ Number entered")
+            human_delay(1, 2)
+        else:
+            results["not_found"].append("Number field")
+            print("⚠️ Number field not found")
+        
+        # === STEP 5: CHECK NOW ===
+        print("🔍 [5/6] Clicking CHECK NOW...")
+        check_selectors = [
+            "//*[contains(text(), 'Check Now')]",
+            "//button[contains(text(), 'Check')]",
+            "//*[contains(@class, 'check')]"
+        ]
+        if safe_click_element(driver, check_selectors):
+            results["steps"].append("✅ Check Now clicked")
+            print("✅ Check Now clicked")
+            human_delay(6, 10)  # Wait for results
+        else:
+            results["not_found"].append("Check Now button")
+            print("⚠️ Check Now not found")
+        
+        # === STEP 6: EXTRACT RESULTS ===
+        print("💾 [6/6] Extracting data...")
+        
+        # Page info
+        results["page_info"] = {
+            "url": driver.current_url,
+            "title": driver.title,
+            "status_code": driver.execute_script("return document.readyState"),
+            "body_length": len(driver.page_source)
+        }
+        
+        # Save screenshot (silent)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        screenshot = f"{folder}/silent_result_{timestamp}.png"
+        driver.save_screenshot(screenshot)
+        
+        # SINGLE FILE SAVE
+        single_file = f"{folder}/{target_number}_COMPLETE_REPORT.txt"
+        with open(single_file, 'w') as f:
+            f.write("🔥 KHALID HUSAIN NUMEXPLOIT SILENT REPORT 🔥\n")
+            f.write("="*60 + "\n\n")
+            f.write(f"Target Number: {target_number}\n")
+            f.write(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"Final URL: {driver.current_url}\n")
+            f.write(f"Page Title: {driver.title}\n\n")
+            
+            f.write("✅ SUCCESS STEPS:\n")
+            for step in results["steps"]:
+                f.write(f"  • {step}\n")
+            
+            f.write("\n❌ NOT FOUND:\n")
+            if results["not_found"]:
+                for item in results["not_found"]:
+                    f.write(f"  • {item}\n")
+            else:
+                f.write("  • All elements found!\n")
+            
+            f.write(f"\n📸 Screenshot: silent_result_{timestamp}.png\n")
+        
+        # JSON backup
+        json.dump(results, open(f"{folder}/{target_number}_results.json", "w"), indent=2)
+        
+        # === SCREEN DISPLAY ===
+        print("\n" + "="*70)
+        print("🎯 SILENT SCAN COMPLETE!")
+        print("="*70)
+        print(f"📱 Target: {target_number}")
+        print(f"🔗 Final URL: {driver.current_url}")
+        print(f"📄 Title: {driver.title}")
+        print(f"📁 Folder: {folder}")
+        
+        print("\n✅ SUCCESS:")
+        for step in results["steps"]:
+            print(f"   • {step}")
+        
+        print("\n❌ NOT FOUND:")
+        if results["not_found"]:
+            for item in results["not_found"]:
+                print(f"   • {item}")
+        else:
+            print("   • All perfect! ✅")
+        
+        print(f"\n💾 SINGLE FILE: {single_file}")
+        print(f"📸 Screenshot: {screenshot}")
+        print("="*70)
+        results["final_status"] = "SUCCESS"
+        
+    except Exception as e:
+        print(f"❌ ERROR: {e}")
+        results["status"] = "ERROR"
+        results["error"] = str(e)
+    finally:
+        if driver:
+            driver.quit()
+        
+        # Always save final results
+        json.dump(results, open(f"{folder}/{target_number}_results.json", "w"), indent=2)
+    
+    print(f"\n🎉 Results saved in: {folder}/")
+    print(f"📄 Main file: {target_number}_COMPLETE_REPORT.txt")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("\nUsage: python3 num.py <target_number>")
+        print("Example: python3 num.py 7294088554")
+        sys.exit(1)
+    
+    target = sys.argv[1].strip()
+    main(target)

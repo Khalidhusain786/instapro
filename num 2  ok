@@ -1,0 +1,160 @@
+#!/usr/bin/env python3
+"""
+Khalid Husain NumExploit v2.0
+Advanced Phone Number Exploitation Tool
+GitHub: https://github.com/Khalidhusain786/Khalid-NumExploit
+Author: Khalid Husain
+"""
+
+import os
+import sys
+import time
+import argparse
+import requests
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from PIL import Image
+import urllib.parse
+
+class NumExploit:
+    def __init__(self, target):
+        self.target = target
+        self.banner = """
+╔══════════════════════════════════════╗
+║     Khalid Husain NumExploit v2.0    ║
+║        Phone Number Intelligence     ║
+╚══════════════════════════════════════╝
+        """
+        self.screenshot_path = f"screenshots/{target}.png"
+        self.data_path = f"screenshots/{target}_data.txt"
+    
+    def print_banner(self):
+        print(self.banner)
+        print(f"🎯 Target: {self.target}")
+        print("-" * 50)
+    
+    def setup_driver(self):
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--window-size=1920,1080")
+        return webdriver.Chrome(options=chrome_options)
+    
+    def hide_branding(self, driver):
+        """Remove all website branding from screenshot"""
+        js_script = """
+        // Hide ALL branding elements
+        var selectors = [
+            '[class*="brand"]', '[class*="footer"]', '[class*="header"]',
+            '[id*="brand"]', '[id*="footer"]', '[id*="header"]',
+            'footer', 'header', '.logo', '[href*="anishexploits"]',
+            '[alt*="logo"]', '[title*="Anish"]'
+        ];
+        
+        selectors.forEach(function(sel) {
+            document.querySelectorAll(sel).forEach(function(el) {
+                el.style.display = 'none !important';
+                el.style.visibility = 'hidden !important';
+                el.style.opacity = '0 !important';
+            });
+        });
+        
+        // Hide any text containing site name
+        var elements = document.querySelectorAll('*');
+        elements.forEach(function(el) {
+            if (el.textContent.toLowerCase().includes('anish') || 
+                el.textContent.toLowerCase().includes('exploit') ||
+                el.innerHTML.toLowerCase().includes('site')) {
+                el.style.display = 'none';
+            }
+        });
+        """
+        driver.execute_script(js_script)
+    
+    def exploit(self):
+        self.print_banner()
+        
+        # Create screenshots folder
+        os.makedirs("screenshots", exist_ok=True)
+        
+        driver = self.setup_driver()
+        try:
+            print("🌐 Opening target application...")
+            driver.get("https://anishexploits.site/app/")
+            time.sleep(20)  # Full load wait
+            
+            print("🔑 Entering access key: Anish123")
+            # Dynamic key field detection
+            key_field = WebDriverWait(driver, 15).until(
+                EC.any_of(
+                    EC.presence_of_element_located((By.NAME, "key")),
+                    EC.presence_of_element_located((By.ID, "key")),
+                    EC.presence_of_element_located((By.XPATH, "//input[contains(@placeholder, 'Key')]")),
+                    EC.presence_of_element_located((By.XPATH, "//input[contains(@type, 'password')]"))
+                )
+            )
+            key_field.clear()
+            key_field.send_keys("Anish123")
+            
+            submit_btn = driver.find_element(By.XPATH, "//button[contains(text(),'Submit') or contains(text(),'submit')]")
+            submit_btn.click()
+            time.sleep(5)
+            
+            print("📱 Entering phone number...")
+            phone_field = WebDriverWait(driver, 15).until(
+                EC.any_of(
+                    EC.presence_of_element_located((By.XPATH, "//input[@type='tel']")),
+                    EC.presence_of_element_located((By.XPATH, "//input[contains(@placeholder, 'phone')]")),
+                    EC.presence_of_element_located((By.NAME, "phone")),
+                    EC.presence_of_element_located((By.ID, "phone"))
+                )
+            )
+            phone_field.clear()
+            phone_field.send_keys(self.target)
+            
+            check_btn = driver.find_element(By.XPATH, "//button[contains(text(),'Check') or contains(text(),'check')]")
+            check_btn.click()
+            
+            print("⏳ Waiting for results...")
+            time.sleep(15)
+            
+            # Hide branding
+            self.hide_branding(driver)
+            time.sleep(2)
+            
+            # Take clean screenshot
+            driver.save_screenshot(self.screenshot_path)
+            print(f"✅ Screenshot saved: {self.screenshot_path}")
+            
+            # Extract text data
+            page_text = driver.execute_script("return document.body.innerText;")
+            with open(self.data_path, "w") as f:
+                f.write(f"Khalid Husain NumExploit Results\n")
+                f.write(f"Target: {self.target}\n")
+                f.write("="*50 + "\n")
+                f.write(page_text[:5000])  # First 5000 chars
+            
+            print(f"📄 Data extracted: {self.data_path}")
+            print("🎉 EXPLOIT COMPLETE!")
+            
+        except Exception as e:
+            print(f"❌ Error: {str(e)}")
+            driver.save_screenshot(f"screenshots/{self.target}_error.png")
+        finally:
+            driver.quit()
+
+def main():
+    parser = argparse.ArgumentParser(description="Khalid Husain NumExploit")
+    parser.add_argument("target", help="Phone number to exploit")
+    args = parser.parse_args()
+    
+    exploit = NumExploit(args.target)
+    exploit.exploit()
+
+if __name__ == "__main__":
+    main()
